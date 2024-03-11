@@ -6,12 +6,9 @@
  * A queue is a data structure that follows the First In, First Out (FIFO) principle.
 */
 
-template<class T> 
-class QueueNode{
-    T data;
-    QueueNode* next;
-};
+///////////////Queue class////////////
 
+//T must have: 
 template<class T> 
  class Queue{
     public:
@@ -91,14 +88,44 @@ template<class T>
     Iterator end() const;
     ConstIterator end() const;
 
-    private:
-    
-    //m_back->.....->m_front
-    QueueNode m_front;
-    QueueNode m_back;
+    //Default c'tor of an empty Queue:
+    Queue();
 
+    /*
+    * Copy c'tor:
+    * @param queue of the same member type as the one you initialized (??????????????)
+    * @exception 
+    *   Memory allocation may fail in the process. If so, bad_alloc is thrown.
+    */
+    Queue(const Queue &queue);
+
+    /*
+    * Assignment operator:
+    * @exception 
+    *   Memory allocation may fail in the process. If so, bad_alloc is thrown.
+    */
+    operator=(const &Queue other);
+
+    //destroyer:
+    ~Queue();
+
+
+    private:
+    /*
+    * QueueNode:
+    * The elements are contained in a list built of QueueNodes.
+    * See the definition of QueueNode below for more info.
+    */
+    struct QueueNode;
+    //pointer to the node containing the first element in the queue:
+    QueueNode *m_front;
+    //pointer to the node containing the last element in the queue:
+    QueueNode *m_back;
+    //the queue's size:
+    int m_size;
  };
 
+//////////////Iterators//////////////
 
 /*
 * Iterator for Queue:
@@ -186,6 +213,8 @@ class Queue<T>::ConstIterator{
     Iterator& operator=(const constIterator&) = default;
 };
 
+//////////////Outer functions on Queue///////////////
+
 /*
 * filter:
 * The function takes a queue and a predict, applies it to each element in the queue, and creates a new queue
@@ -230,6 +259,48 @@ template<class T>
     T reduce(queue<T> queue, T *binaryOperator(T element, T externalValue), T startingValue);
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////end of public
 
+
+
+
+//////////Queue list implimentation
+/*
+* QueueNode:
+* The node for the linked list containing the queue's elements.
+* The nodes in the list are arranged in the following way: m_back->.....->m_front->NULL
+*/
+template<class T> 
+struct Queue<T>::QueueNode{
+    T m_data;
+    QueueNode *m_next;
+    QueueNode(){
+        m_next = NULL;
+    }
+
+};
+
+
+///////////////Queue "building" function implementation
+
+//default c'tor of an empty queue
+template<class T> 
+Queue<T>::Queue(){
+     m_front = NULL;
+     m_back = NULL;
+     size = 0;
+}
+
+//copy c'tor
+template<class T> 
+Queue<T>::Queue(const Queue<T> &queue){
+    for(T member : queue){
+        pushBack(member);
+        try{
+
+            throw std::bad_alloc& e;
+        }
+    }
+}
 
 #endif //QUEUE_H
