@@ -1,29 +1,33 @@
 #ifndef QUEUE_H 
 #define QUEUE_H
+#include "QueueNode.h"
 
 /*
  * This is a general implementation of a queue class.
  * A queue is a data structure that follows the First In, First Out (FIFO) principle.
-*/
-
-///////////////Queue class////////////
-
-//T must have: 
+ * @attention 
+ *      the type of the elements T must support the following operations:
+ *      - default c'tor
+ *      - destructor
+ *      - copy c'tor
+ *      - operator =( )
+ */
 template<class T> 
  class Queue{
     public:
 
     /*
     * EmptyQueue:
-    * Exception in case that a function which isn't supported on empty queues gets an empty queue.
+    * Exception in case that a function that isn't supported on empty queues gets an empty queue.
     */
     class EmptyQueue{};
 
     /*
      * pushBack:
      * The function adds a new element to the end of the queue.
-     * @param &element Reference to the new element. Type must be as the other elements in the queue.
-     * @exception If a memory allocation fails, the function will throw bad_alloc. The queue will remain unchanged.
+     * @param T element The new element of type T.
+     * @exception 
+     *      - Will throw an exception if the construction of T fails. 
     */
     void pushBack(const T &element);
 
@@ -33,7 +37,7 @@ template<class T>
     * @return reference to the first element in the queue.
     * @exception If the queue is empty, it will abort and throw EmptyQueue.
     */
-    T &front();
+    T& front();
 
     /*
     * front(const):
@@ -41,7 +45,7 @@ template<class T>
     * @return const reference to the first element in the queue.
     * @exception If the queue is empty, it will abort and throw EmptyQueue.
     */
-    const T &front();
+    const T& front() const;
 
    /*
    * popFront:
@@ -53,10 +57,10 @@ template<class T>
 
     /*
     * size:
-    * The function returns the current number of elements in the queue. 
+    * The function returns the m_current number of elements in the queue. 
     * @return The queue size.
     */
-    int size();
+    int size() const;
 
     /*
     * non-const iterator. Only supports non-const queues.
@@ -76,16 +80,15 @@ template<class T>
     * points to the first element in the queue.
     * @return Iterator that points to the first element.
     */
-    Iterator begin() const;
-    ConstIterator begin() const;
-
+    Iterator begin();
+    Iterator end();
     /*
     * end():
     * points to the queue's ending.
     * @exception If an invalid operation is performed on the end() iterator, it will throw InvalidOperation.
     * @return Iterator that points to next to last element.
     */
-    Iterator end() const;
+    ConstIterator begin() const;
     ConstIterator end() const;
 
     //Default c'tor of an empty Queue:
@@ -93,9 +96,10 @@ template<class T>
 
     /*
     * Copy c'tor:
-    * @param queue of the same member type as the one you initialized (??????????????)
+    * @param queue of type T.
     * @exception 
     *   Memory allocation may fail in the process. If so, bad_alloc is thrown.
+    *   If the c'tor of T throws an exception, it is rethrown.
     */
     Queue(const Queue &queue);
 
@@ -103,24 +107,22 @@ template<class T>
     * Assignment operator:
     * @exception 
     *   Memory allocation may fail in the process. If so, bad_alloc is thrown.
+    *   If the c'tor of T throws an exception, it is rethrown.
     */
-    operator=(const &Queue other);
+    Queue& operator=(const Queue<T> &other);
 
-    //destroyer:
+    //destructor
     ~Queue();
 
 
     private:
-    /*
-    * QueueNode:
-    * The elements are contained in a list built of QueueNodes.
-    * See the definition of QueueNode below for more info.
-    */
-    struct QueueNode;
+
     //pointer to the node containing the first element in the queue:
-    QueueNode *m_front;
+    QueueNode<T> *m_front;
+
     //pointer to the node containing the last element in the queue:
-    QueueNode *m_back;
+    QueueNode<T> *m_back;
+
     //the queue's size:
     int m_size;
  };
@@ -133,6 +135,16 @@ template<class T>
 
 template<class T>
 class Queue<T>::Iterator{
+    private:
+    
+    // Pointer to the m_current node
+    QueueNode<T>* m_current;
+
+    public:
+
+    //c'tor:
+    Iterator(QueueNode<T>* node) :m_current(node) {}
+
     /*
     * InvalidOperation:
     * Exception in case that an operation on an iterator is invalid.
@@ -142,18 +154,31 @@ class Queue<T>::Iterator{
     /*
     * *( ) operator:
     * Gets a read-only version of the element that the iterator points to.
-    * @return const reference to the element.
+    * @return reference to the element.
     * @exception If the iterator points next to the last member, InvalidOperation is thrown.
     */
-    const T& operator*() const;
+    T& operator*() 
+    {
+        if (!m_current) {
+            throw InvalidOperation();
+        }
+        return m_current->m_data;
+    }
 
     /*
     * ++( ) operator:
     * Moves an iterator to the next element.
     * @exception If the iterator points next to the last member, InvalidOperation is thrown.
     */
-    Iterator& operator++();
-    
+    Iterator& operator++()
+    {
+        if (!m_current) {
+            throw InvalidOperation();
+        }
+        m_current = m_current->m_next;
+        return *this;
+    }
+
     /*
     * != operator:
     * Compares iterator to another iterator.
@@ -161,21 +186,33 @@ class Queue<T>::Iterator{
     * @return - true if the iterators point to different elements.
     *         - false if the iterators point to the same element.
     */
-    bool operator!=(const Iterator& it) const;
+    bool operator!=(const Iterator& it) const
+    {
+        return this->m_current != it.m_current;
+    }
     
 
-    /*
-    * c'tor and assignment operator of the iterator is default????????/.
-    */
+    //Function to get the begin iterator
+        Iterator begin() {
+        return Iterator(m_front);
+    }
+
+    // Function to get the ending iterator
+    Iterator end() {
+        return Iterator(m_back+1);
+    }
     Iterator(const Iterator&) = default;
     Iterator& operator=(const Iterator&) = default;
-
-
 };
 
 /*const Iterator for Queue*/
 template<class T>
 class Queue<T>::ConstIterator{
+    private:
+    const QueueNode<T>* m_current;
+    public:
+    ConstIterator(const QueueNode<T>* node) : m_current(node) {}
+
     /*
     * InvalidOperation:
     * Exception in case that an operation on an iterator is invalid.
@@ -188,14 +225,27 @@ class Queue<T>::ConstIterator{
     * @return const reference to the element.
     * @exception If the iterator points next to the last member, InvalidOperation is thrown.
     */
-    const T& operator*() const;
+    const T& operator*() const
+    {
+        if (!(this->m_current)) {
+            throw InvalidOperation();
+        }
+        return this->m_current->m_data;
+    }
 
     /*
     * ++( ) operator:
     * Moves an iterator to the next element.
     * @exception If the iterator points next to the last member, InvalidOperation is thrown.
     */
-    constIterator& operator++();
+    ConstIterator& operator++()
+    {
+         if (!m_current) {
+            throw InvalidOperation();
+        }
+        m_current = m_current->m_next;
+        return *this;
+    }
 
     /*
     * != operator:
@@ -204,16 +254,28 @@ class Queue<T>::ConstIterator{
     * @return - true if the iterators point to different elements.
     *         - false if the iterators point to the same element.
     */
-    bool operator!=(const constIterator& it) const;
+    bool operator!=(const ConstIterator& it) const
+    {
+        return this->m_current != it.m_current;
+    }
+
+        ConstIterator begin() const {
+        return ConstIterator(m_front);
+    }
+
+    // Function to get the ending iterator
+    ConstIterator end() const {
+        return ConstIterator(m_back+1);
+    }
 
     /*
     * c'tor and assignment operator of the iterator is default.
     */
-    Iterator(const constIterator&) = default;
-    Iterator& operator=(const constIterator&) = default;
+    ConstIterator(const ConstIterator&) = default;
+    ConstIterator& operator=(const ConstIterator&) = default;
 };
 
-//////////////Outer functions on Queue///////////////
+//////////////Queue external functions////////////////////////
 
 /*
 * filter:
@@ -227,7 +289,7 @@ class Queue<T>::ConstIterator{
 */
 
 template<class T> 
-    Queue<T>& filter(Queue<T> Queue, bool *predict(T));
+    Queue<T>& filter(const Queue<T> Queue, bool (*predicate)(T));
     
 
 /*
@@ -240,7 +302,7 @@ template<class T>
 *                  returns a value of T.
 */
 template<class T> 
-    void transform(Queue<T> queue, T *transform(T element));
+    void transform(Queue<T> &queue, T (*transform)(T));
 
 /*
 * reduce:
@@ -256,7 +318,20 @@ template<class T>
 * @param startingValue - a value of the queue's element type.
 */
 template<class T>
-    T reduce(queue<T> queue, T *binaryOperator(T element, T externalValue), T startingValue);
+    T reduce (const Queue<T>& queue, T startingValue, T (*operation)(T, T));
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////end of public
@@ -264,43 +339,138 @@ template<class T>
 
 
 
-//////////Queue list implimentation
-/*
-* QueueNode:
-* The node for the linked list containing the queue's elements.
-* The nodes in the list are arranged in the following way: m_back->.....->m_front->NULL
-*/
+///////////////Queue member function implementations
+
 template<class T> 
-struct Queue<T>::QueueNode{
-    T m_data;
-    QueueNode *m_next;
-    QueueNode(){
-        m_next = NULL;
+void Queue<T>::pushBack(const T &element){
+    QueueNode<T>* newNode = new QueueNode<T>(element); //remember it may fail, don't write code before.
+
+    if(m_size){
+        m_back->m_next = newNode;
+        m_back = newNode;
     }
+    else{
+        m_back = newNode;
+        m_front = newNode;
+    }
+    ++m_size;
+}
 
-};
+template<class T>
+T& Queue<T>::front(){
+    if(m_size == 0){
+        throw EmptyQueue();
+    }
+    return m_front ->m_data;
+}
+
+template<class T>
+const T& Queue<T>::front() const{
+    if(m_size == 0){
+        throw EmptyQueue();
+    }
+    return m_front->m_data;
+}
 
 
-///////////////Queue "building" function implementation
+template<class T> 
+void Queue<T>::popFront(){
+    if(m_size == 0){
+        throw EmptyQueue();
+    }
+    QueueNode<T> *temp = m_front->m_next;
+    delete m_front;
+    m_front = temp;
+}
+
+
+template<class T>
+int Queue<T>::size() const{
+    return m_size;
+}
+
+
+
+
 
 //default c'tor of an empty queue
 template<class T> 
 Queue<T>::Queue(){
      m_front = NULL;
      m_back = NULL;
-     size = 0;
+     m_size = 0;
+}
+
+//destructor of the queue
+template<class T>
+Queue<T>::~Queue(){
+    deleteList(m_front);
 }
 
 //copy c'tor
 template<class T> 
-Queue<T>::Queue(const Queue<T> &queue){
-    for(T member : queue){
-        pushBack(member);
-        try{
-
-            throw std::bad_alloc& e;
+Queue<T>::Queue(const Queue<T> &queue) : m_front(NULL), m_back(NULL), m_size(0) {
+    try{
+        for(const T& element : queue){
+            pushBack(element);
         }
     }
+    catch(std::bad_alloc& e){
+        delete this;
+        throw std::bad_alloc();
+    }
+    catch(...){ //T may throw some other exception.
+        delete this;
+        throw;
+    }
 }
+
+// =( ) operator
+template<class T>
+Queue<T>& Queue<T>::operator=(const Queue<T> &other){
+    if(this == &other){
+        return *this;
+    }
+    QueueNode<T> newList = copyList(&other);
+    deleteList(m_front);
+    m_front = &newList;
+    m_back = getLastNode(newList);
+    return *this;
+}
+
+/////////External functions implementation:
+
+ template<class T> 
+  Queue<T>* filter(const Queue<T>& queue, bool (*predicate)(const T&))
+{
+    Queue<T>* result = new Queue<T>();
+    for (typename Queue<T>::ConstIterator it = queue.begin(); it != queue.end(); ++it)
+    {
+        if (predicate(*it))
+        {
+            result->pushBack(*it);
+        }
+    }
+
+    return result;
+}
+
+template<class T>
+T reduce (const Queue<T>& queue, T startingValue, T (*operation)(T, T))
+{
+    T finalValue = startingValue;
+    for (typename Queue<T>::ConstIterator it = queue.begin(); it != queue.end(); ++it)
+    {
+        finalValue=operation(finalValue,*it);
+    }
+    return finalValue;
+}
+
+template<class T> 
+    void transform(Queue<T> &queue, T (*transform)(T)){
+        for(T& member : queue){
+            member = transform(member);
+        }
+    }
 
 #endif //QUEUE_H
