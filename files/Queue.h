@@ -280,8 +280,8 @@ class Queue<T>::ConstIterator{
 * @return Returns a reference to the new queue.
 */
 
-template<class T> 
-    Queue<T> filter(const Queue<T>& queue, bool (*predicate)(T));
+template<class T, class S> 
+    Queue<T> filter(const Queue<T>& queue, S predicate);
     
 
 /*
@@ -457,8 +457,8 @@ typename Queue<T>::ConstIterator Queue<T>::end() const{
 
 /////////External functions implementation:
 
- template<class T> 
-  Queue<T> filter(const Queue<T>& queue, bool (*predicate)(T))
+ template<class T, class S> 
+  Queue<T> filter(const Queue<T>& queue, S predicate)
 {
     Queue<T> result;
     for (typename Queue<T>::ConstIterator it = queue.begin(); it != queue.end(); ++it)
@@ -486,7 +486,7 @@ T reduce (const Queue<T>& queue, T startingValue, T (*operation)(T, T))
 template<class T, class S> 
     void transform(Queue<T> &queue, S operation){
         for(T& member : queue){
-            member = operation(member);
+            operation(member);
         }
     }
 
