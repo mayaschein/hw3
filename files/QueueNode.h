@@ -1,3 +1,6 @@
+#ifndef QUEUENODE_H 
+#define QUEUENODE_H
+
 //////////QueueNode implimentation
 /*
 * QueueNode:
@@ -15,8 +18,6 @@ struct QueueNode{
     ~QueueNode() = default;
     QueueNode(const QueueNode& other) : m_data(other.m_data), m_next(other.m_next) {} //may throw an exception if T's copy c'tor threw an unknown error.
     QueueNode& operator =(const QueueNode& other); //copies m_data but not m_next.
-
-
 };
 
 /*
@@ -30,7 +31,7 @@ struct QueueNode{
     *   - will throw a generic exception if size is non-positive
     */
    template<class T>
-    QueueNode<T>* createEmptyList(const int size);
+    QueueNode<T>* createEmptyList(const int& size);
 
 
 
@@ -50,17 +51,6 @@ struct QueueNode{
 template <class T>
 void deleteList(const QueueNode<T>* firstNode);
 
-/*
-    * copyList:
-    * @param - Pointer to the first node in the list.
-    * @return - reference to a new copy of the list.
-    * @exceptions 
-    *   - will throw bad_alloc if a memory allocation failed
-    *   - will throw an exception if T's constructor threw a unknown error.
-    *   - will throw a generic exception if the parameter is NULL.
-    */
-   template<class T>
-    QueueNode<T>& copyList(const QueueNode<T>* other);
 
 ////////////////////////implementation
 
@@ -73,7 +63,7 @@ QueueNode<T>& QueueNode<T>::operator =(const QueueNode& other){
 }
 
 template<class T>
-QueueNode<T>* createEmptyList(const int size){
+QueueNode<T>* createEmptyList(const int& size){
     if(size <=0){
         throw;
     }
@@ -104,7 +94,7 @@ QueueNode<T>* createEmptyList(const int size){
 
 
 template<class T>
-QueueNode<T>* getLastNode(const QueueNode<T>* list){
+QueueNode<T>* getLastNode(QueueNode<T>* list){ 
     if(list == NULL){
         return NULL;
     }
@@ -116,21 +106,6 @@ QueueNode<T>* getLastNode(const QueueNode<T>* list){
     return list;
 }
 
-template<class T>
-QueueNode<T>& copyList(const QueueNode<T>* other){
-    if(other = NULL){
-        throw;
-    }
-
-    QueueNode<T>* listCopy = createEmptyList(other->m_size);
-    while(listCopy != NULL){
-        listCopy = *other;
-        listCopy = listCopy->m_next;
-        other = other->m_next;
-    }
-
-    return *listCopy;
-}
 
 template<class T>
 void deleteList(const QueueNode<T>* firstNode){
@@ -142,3 +117,5 @@ void deleteList(const QueueNode<T>* firstNode){
         firstNode = temp;
     }
 }
+
+#endif

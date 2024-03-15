@@ -109,7 +109,7 @@ template<class T>
     *   Memory allocation may fail in the process. If so, bad_alloc is thrown.
     *   If the c'tor of T throws an exception, it is rethrown.
     */
-    Queue& operator=(const Queue<T> &other);
+    Queue<T>& operator=(const Queue<T> &other);
 
     //destructor
     ~Queue();
@@ -125,6 +125,8 @@ template<class T>
 
     //the queue's size:
     int m_size;
+
+    QueueNode<T> copyList(const Queue<T> &other);
  };
 
 //////////////Iterators//////////////
@@ -328,6 +330,39 @@ template<class T>
 
 //////////////////////////////////////////////////////////////////////////////////////////////end of public
 
+///////////////////Helper Functions
+
+/*
+    * copyList:
+    * Makes a copy of a list.
+    * @param - The front node of the list.
+    * @return - reference to a new copy of the list.
+    * @exceptions 
+    *   - will throw bad_alloc if a memory allocation failed
+    *   - will throw an exception if T's constructor threw a unknown error.
+    *   - will throw a generic exception if the parameter is NULL.
+    */
+template<class T>
+QueueNode<T> Queue<T>::copyList(const Queue<T> &other){
+    if(other.m_front == NULL){
+        throw;
+    }
+
+    QueueNode<T>* otherList = other.m_front;
+   QueueNode<T>* listCopy = createEmptyList<T>(other.m_size);
+
+    while(listCopy != NULL){
+        *listCopy = *otherList;
+        listCopy = listCopy->m_next;
+        otherList = otherList->m_next;
+    } 
+
+    return *listCopy;
+ }
+
+
+
+
 
 
 
@@ -399,37 +434,53 @@ template<class T>
 Queue<T>::~Queue(){
     deleteList(m_front);
 }
-
+/*Queue<std::vector<char>> q1(q), q2;
+        q2 = q;
+        const Queue<std::vector<char>> q3 = q;*/
 //copy c'tor
 template<class T> 
 Queue<T>::Queue(const Queue<T> &queue) : m_front(NULL), m_back(NULL), m_size(0) {
     try{
-        for(const T& element : queue){
-            pushBack(element);
+        for(typename Queue<T>::ConstIterator it = queue.begin(); it != queue.end(); ++it){
+            pushBack(*it);
         }
     }
     catch(std::bad_alloc& e){
-        delete this;
+        //delete this;
         throw std::bad_alloc();
     }
     catch(...){ //T may throw some other exception.
-        delete this;
+        //delete this;
         throw;
     }
 }
 
 // =( ) operator
 template<class T>
-Queue<T>& Queue<T>::operator=(const Queue<T> &other){
-    if(this == &other){
-        return *this;
+Queue<T>& Queue<T>::operator=(const Queue<T> &other)
+{
+    Queue<T> tempQueue;
+
+    for (typename Queue<T>::ConstIterator it = other.begin(); it != other.end(); ++it) {
+        tempQueue.pushBack(*it);
     }
-    QueueNode<T> newList = copyList(&other);
-    deleteList(m_front);
-    m_front = &newList;
-    m_back = getLastNode(newList);
-    return *this;
+
+    QueueNode<T> *tempFront = m_front;
+    m_front = tempQueue.m_front;
+    tempQueue.m_front = tempFront;
+
+    QueueNode<T> *tempBack = m_back;
+    m_back = tempQueue.m_back;
+    tempQueue.m_back = tempBack;
+
+    int tempSize = m_size;
+    m_size = tempQueue.m_size;
+    tempQueue.m_size = tempSize;
+    
+    return *this; 
 }
+
+
 
 //Function to get the begin iterator
 template<class T>
@@ -458,7 +509,7 @@ typename Queue<T>::ConstIterator Queue<T>::end() const{
 /////////External functions implementation:
 
  template<class T, class S> 
-  Queue<T> filter(const Queue<T>& queue, S predicate)
+Queue<T> filter(const Queue<T>& queue, S predicate)
 {
     Queue<T> result;
     for (typename Queue<T>::ConstIterator it = queue.begin(); it != queue.end(); ++it)
@@ -484,10 +535,10 @@ T reduce (const Queue<T>& queue, T startingValue, T (*operation)(T, T))
 }
 
 template<class T, class S> 
-    void transform(Queue<T> &queue, S operation){
-        for(T& member : queue){
-            operation(member);
-        }
+void transform(Queue<T> &queue, S operation) {
+    for (T& member : queue) {
+        member = operation(member); 
     }
+}
 
 #endif //QUEUE_H

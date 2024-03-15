@@ -33,46 +33,49 @@ public:
     // If the difference becomes less than 0, the current points will be set to 0
     int operator-=(int subtraction);
 
-    // Overloaded equality comparison operator (==) to compare the points of a HealthPoints object with an integer value
-    bool operator==(int points) const;
 
     // Overloaded equality comparison operator (==) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator==(HealthPoints& other) const;
+    bool operator==(const HealthPoints& other) const;
 
     // Overloaded inequality comparison operator (!=) to compare the points of a HealthPoints object with an integer value
     bool operator!=(int points) const;
 
     // Overloaded inequality comparison operator (!=) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator!=(HealthPoints& other) const;
+    bool operator!=(const HealthPoints& other) const;
 
     // Overloaded greater than comparison operator (>) to compare the points of a HealthPoints object with an integer value
     bool operator>(int points) const;
 
     // Overloaded greater than comparison operator (>) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator>(HealthPoints& other) const;
+    bool operator>(const HealthPoints& other) const;
 
     // Overloaded greater than or equal to comparison operator (>=) to compare the points of a HealthPoints object with an integer value
     bool operator>=(int points) const;
 
     // Overloaded greater than or equal to comparison operator (>=) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator>=(HealthPoints& other) const;
+    bool operator>=(const HealthPoints& other) const;
 
     // Overloaded less than comparison operator (<) to compare the points of a HealthPoints object with an integer value
     bool operator<(int points) const;
 
     // Overloaded less than comparison operator (<) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator<(HealthPoints& other) const;
+    bool operator<(const HealthPoints& other) const;
 
     // Overloaded less than or equal to comparison operator (<=) to compare the points of a HealthPoints object with an integer value
     bool operator<=(int points) const;
 
     // Overloaded less than or equal to comparison operator (<=) to compare the points of a HealthPoints object with another HealthPoints object
-    bool operator<=(HealthPoints& other) const;
+    bool operator<=(const HealthPoints& other) const;
 
     // Overloaded insertion operator (<<) to print the points and maximal points of a HealthPoints object to an output stream
      friend std::ostream& operator<<(std::ostream& os, const HealthPoints& object);
      friend HealthPoints operator+(int addition1, HealthPoints addition2);
      //friend HealthPoints operator-(HealthPoints subtraction1, int subtraction2);
+
+    // Overloaded equality comparison operator (==) to compare the points of a HealthPoints object with an integer value
+     friend bool operator==(const HealthPoints& HP, const int points);
+    //Duplicated to allow symmetric behaviour
+     friend bool operator==(const int points, const HealthPoints& HP); 
 
     // Exception class for invalid arguments
     class InvalidArgument{};
